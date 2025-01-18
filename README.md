@@ -1,5 +1,5 @@
 # Table of Contents
-### 1. Introduction
+### 1. [Introduction](#introduction)
 
 Purpose of the Documentation
 Overview of the Backend Architecture
