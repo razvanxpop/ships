@@ -12,9 +12,9 @@ Component Diagram with Relationships and Flows
 Explanation of Communication Protocols (e.g., REST, GraphQL, WebSocket)
 Tools: Lucidchart, Draw.io, or Visio for diagrams.
 
-Authentication and Authorization
+# 3. Authentication and Authorization
 
-# Overview
+### Overview
 The authentication and authorization layer is designed to:
 
 * Secure user access using a JWT-based mechanism.
@@ -22,7 +22,7 @@ The authentication and authorization layer is designed to:
 * Validate login credentials and issue JWTs with an expiration time.
 * Authenticate and authorize API requests using a custom JWT filter.
 
-# Registration
+### Registration
 The registration process allows new users to create an account. The system ensures:
 
 * Email Uniqueness: Checks whether the provided email already exists in the database.
@@ -30,7 +30,7 @@ The registration process allows new users to create an account. The system ensur
 * Role Assignment: New users are assigned the default role (ROLE_USER).
 * Email Notification: Sends an email with the login credentials.
 
-## Endpoint:
+#### Endpoint:
 POST /auth/register
 
 ## Request Body:
