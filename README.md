@@ -1,14 +1,14 @@
 # Table of Contents
-[**1. Introduction**](#1-introduction)
-[**2. System Architecture**](#2-system-architecture)
-[**3. Authentication and Authorization**](#3-authentication-and-authorization)
-[**4. Database Management**](#4-database-management)
-[**5. Security Features**](#5-security-features)
-[**6. Image Handling**](#6-image-handling)
-[**7. Email Services**](#7-email-services)
-[**8. API Documentation**](#8-api-documentation)
-[**9. Troubleshooting**](#9-faq-and-troubleshooting)
-[**10. Appendices**](#10-appendices)
+* [**1. Introduction**](#1-introduction)
+* [**2. System Architecture**](#2-system-architecture)
+* [**3. Authentication and Authorization**](#3-authentication-and-authorization)
+* [**4. Database Management**](#4-database-management)
+* [**5. Security Features**](#5-security-features)
+* [**6. Image Handling**](#6-image-handling)
+* [**7. Email Services**](#7-email-services)
+* [**8. API Documentation**](#8-api-documentation)
+* [**9. Troubleshooting**](#9-faq-and-troubleshooting)
+* [**10. Appendices**](#10-appendices)
 
 
 # 1. Introduction
@@ -793,8 +793,6 @@ All email-sending methods handle MessagingException, which may occur due to:
 * Batch Processing:
   - Group email notifications to reduce overhead.
 
-# 8. Deployment Process
-
 # 8. API Documentation
 This section provides a comprehensive overview of the API endpoints exposed by the backend server. Each endpoint is described with its HTTP method, path, request body, response format, status codes, and authorization requirements.
 
@@ -1279,7 +1277,7 @@ This section provides additional information, resources, and references to suppo
 **Codebase Structure**
 The backend server follows a modular structure for better organization and maintainability.
 
-**1.1 Directory Layout**
+### Directory Layout
 ```plaintext
 src/
 ├── main/
