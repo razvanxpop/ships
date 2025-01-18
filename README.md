@@ -1,87 +1,15 @@
 # Table of Contents
 [**1. Introduction**](#1-introduction)
-
-Purpose of the Documentation
-Overview of the Backend Architecture
-Key Technologies Used (e.g., Node.js, Django, etc.)
-Prerequisites for Understanding This Documentation
-
 [**2. System Architecture**](#2-system-architecture)
-
-High-Level Architecture Diagram
-Component Diagram with Relationships and Flows
-Explanation of Communication Protocols (e.g., REST, GraphQL, WebSocket)
-Tools: Lucidchart, Draw.io, or Visio for diagrams.
-
 [**3. Authentication and Authorization**](#3-authentication-and-authorization)
-Overview of JWT (JSON Web Tokens)
-Authorization Flow with Diagrams
-Token Expiration and Refresh Mechanisms
-Tools: Postman for testing authentication endpoints, Swagger for API documentation.
-
 [**4. Database Management**](#4-database-management)
-
-Database Schema Overview (ERD Diagrams)
-Data Storage for Images
-Explanation of Storing Images in the Database vs. File System
-Reference to any File Storage Services (e.g., AWS S3, Google Cloud Storage)
-Tools: DB Designer, PgAdmin, or MySQL Workbench.
-
 [**5. Security Features**](#5-security-features)
-
-Password Hashing and Salting Process
-Explanation of Hashing Algorithms (e.g., bcrypt, Argon2)
-Secure Storage of Sensitive Information
-Rate Limiting and Protection Against Brute Force Attacks
-Tools: OWASP Cheat Sheets, Burp Suite for security testing.
-
 [**6. Image Handling**](#6-image-handling)
-
-Explanation of Image Upload and Retrieval
-Steps for Processing Images (e.g., Resizing, Compression)
-Storage Mechanism (Database or External File Storage)
-Tools: Sharp (for image processing in Node.js), ImageMagick.
-
 [**7. Email Services**](#7-email-services)
+[**8. API Documentation**](#8-api-documentation)
+[**9. Troubleshooting**](#9-faq-and-troubleshooting)
+[**10. Appendices**](#10-appendices)
 
-Email Sending Mechanism
-Libraries/Services Used (e.g., Nodemailer, SendGrid)
-Example Code Snippet for Sending Emails
-Configuration of SMTP Servers
-Tools: Mailtrap for testing emails, SendGrid for production services.
-
-[**8. Deployment Process**](#8-deployment-process)
-
-Setting Up the Server Environment
-Using Docker for Containerization
-CI/CD Pipeline Overview
-Environment Variables and Secrets Management
-Tools: Docker Compose, GitHub Actions or Jenkins for CI/CD.
-
-[**9. API Documentation**](#9-api-documentation)
-
-API Endpoints (Routes, Methods, and Payloads)
-Example Requests and Responses
-Error Codes and Their Meanings
-Tools: Swagger UI, Postman, or Redoc.
-
-[**10. Monitoring and Logging**](#10-monitoring-and-logging)
-
-Logging Mechanism (e.g., Winston, Morgan)
-Application Performance Monitoring (e.g., New Relic, Datadog)
-Error Tracking Tools (e.g., Sentry)
-Tools: LogDNA, Elastic Stack.
-
-[**11. FAQ and Troubleshooting**](#11-faq-and-troubleshooting)
-
-Common Issues and Solutions
-Tips for Debugging
-Where to Find Support (e.g., Official Documentation, Community Forums)
-
-[**12. Appendices**](#12-appendices)
-Glossary of Terms
-Links to Resources and References
-Additional Diagrams or Supporting Information
 
 # 1. Introduction
 This section introduces the documentation for the backend server of the client-server application. It serves as a guide for new developers joining the project, providing an overview of the application's architecture, technologies, and prerequisites. The goal is to reduce onboarding time, allowing new contributors to quickly understand, adapt, and contribute effectively to the development of the application.
@@ -435,10 +363,81 @@ catch (Exception e) {
 * EmailSender: For sending account-related emails.
 
 # 4. Database Management
-This section provides an overview of the database management strategies implemented in the backend server. It includes the database schema, data storage for images, and considerations for storing images in the database versus the file system.
+The backend uses PostgreSQL as the database management system, running in a Dockerized environment. PostgreSQL is selected for its robust handling of relational data, support for advanced data types (e.g., JSON, arrays, and large objects), and scalability.
 
-### Database Schema Overview
-<img src="./images/erd-diagram.jpg" height="128" width="100">
+### Key Highlights:
+* Relational Database: Follows normalized schema design to reduce redundancy and improve consistency.
+* Entity Relationships: Tables are structured to represent real-world relationships, such as users owning pets and scheduling veterinary appointments.
+* Large Object Storage: Images are stored in the database using PostgreSQL's OID (Object Identifier) for handling binary data efficiently.
+
+### Data Storage Practices
+**2.1 Password Management**
+* Passwords are hashed and salted before being stored in the database.
+* The application uses PasswordEncoder (e.g., bcrypt) to hash passwords, making them resistant to brute-force and rainbow table attacks.
+* Example:
+  ```json
+  String password = PasswordService.generatePassword();
+  user.setPassword(passwordEncoder.encode(password));
+  ```
+
+**2.2 Image Storage**
+* User profile images are stored as binary data using PostgreSQL's OID (Object Identifier) type.
+* The images are first converted into Base64 strings when being sent to or retrieved from the database. This ensures compatibility with JSON-based APIs.
+* Conversion Process:
+  * To Base64: For API responses, image data is encoded into a Base64 string:
+    ```json
+    String base64Image = Base64.getEncoder().encodeToString(user.getImageData());
+    ```
+  * From Base64: For saving in the database, the image is stored as OID.
+
+**2.3 Relationships and Constraints**
+* Users and Roles: One-to-Many relationship.
+  * A user can have multiple roles (e.g., ROLE_USER, ROLE_ADMIN).
+* Users and Pets: One-to-Many relationship.
+  * Each user can own multiple pets.
+* Pets and Veterinary Appointments: Many-to-One relationship.
+  * A pet can have multiple veterinary appointments, but each appointment is linked to one pet.
+
+### Schema Design
+<img src="./images/erd-diagram.jpg" alt="ERD Diagram" height="128" width="128">
+
+### Query Optimization
+The application uses JPA (Java Persistence API) for interacting with the database. JPA offers the following advantages:
+* Lazy Loading: Relationships are loaded only when needed, reducing unnecessary data retrieval.
+* Custom Queries: For complex queries, custom methods are defined in repositories. Example:
+  ```java
+  @Query("SELECT p FROM Pet p WHERE p.owner.email = :email")
+  List<Pet> findPetsByOwnerEmail(@Param("email") String email);
+  ```
+
+### Dockerized PostgreSQL
+The application uses a Dockerized PostgreSQL instance, ensuring consistent environments across development, testing, and production.
+**Key Configuration:**
+* The compose.yml file defines the PostgreSQL service
+  ```java
+  services:
+  postgres:
+    image: 'postgres:latest'
+    environment:
+      POSTGRES_USER: 'pawpaw_user'
+      POSTGRES_PASSWORD: 'pawpaw_password'
+      POSTGRES_DB: 'pawpal_db'
+    ports:
+      - '5435:5432'
+  ```
+**Advantages**:
+* Easy environment replication.
+* Persistent volume for database data.
+
+### Example Workflow
+User Registration with Profile Image:
+1. Input: A user submits their details and an optional profile image.
+2. Processing:
+   * Image data is received as a Base64 string.
+   * Converted to binary and stored in the database as OID.
+   * Password is hashed and stored securely.
+3. Storage: The user and their data (including the image) are saved in the Users table.
+4. Retrieval: When retrieving the user data, the image binary is converted back to a Base64 string and included in the API response.
 
 # 5. Security Features
 This section outlines the security features implemented in the backend server to ensure secure access and data protection. It includes configurations for authentication, authorization, password security, and CORS (Cross-Origin Resource Sharing) policy enforcement.
@@ -546,6 +545,97 @@ catch (Exception e) {
 * CORS Configuration: Manages client-server communication securely.
 
 # 6. Image Handling
+This section explains how the backend server manages user profile images, including how they are processed, stored, and retrieved. The system leverages PostgreSQL for storage and follows best practices for handling binary data.
+
+### Overview
+User profile images are an optional feature that allows users to personalize their accounts. The backend supports image upload, storage, and retrieval in a secure and efficient manner.
+**Key Features:**
+* Image Upload: Images are received as Base64-encoded strings in API requests.
+* Database Storage: Images are stored in the database as binary data using PostgreSQL's OID (Object Identifier) type.
+* Image Retrieval: Images are converted back to Base64 strings and sent to clients via API responses.
+
+### Image Handling Workflow
+**2.1 Uploading Images**
+1. Input: The user uploads a profile image in Base64 format as part of their account details.
+2. Processing:
+   * The Base64 string is decoded into binary data.
+   * The binary data is stored in the database under the imageData column in the Users table.
+   * The MIME type of the image (e.g., image/png) is stored in the imageType column for easy retrieval.
+
+**Code Snippet**:
+```java
+public static UserDTO toUserDTO(User user) {
+    String base64Image = "";
+    if (user.getImageData() != null) {
+        base64Image = Base64.getEncoder().encodeToString(user.getImageData());
+    }
+    return new UserDTO(user.getId(), user.getFirstName(), user.getLastName(), user.getEmail(), 
+                       user.getPassword(), user.isNew(), user.getRoles(), petsDTO, base64Image, 
+                       user.getImageType());
+}
+```
+
+**2.2 Retrieving Images**
+1. Fetching:
+  * When a user's data is retrieved, the imageData column is queried.
+  * The binary image data is converted to a Base64 string.
+2. Response:
+  * The API includes the Base64 string in the image field of the response.
+  * The imageType field specifies the MIME type for rendering.
+
+**Example API Response:**
+```json
+{
+  "id": 1,
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@example.com",
+  "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg...",
+  "imageType": "image/png"
+}
+```
+
+**2.3 Deleting or Updating Images**
+* When a user's profile image is updated or removed:
+  * The existing binary data in the database is replaced or deleted.
+  * Updates are seamless since the image is referenced by the user's id.
+
+### Storage Details
+**Database Storage**
+* Column: The imageData column in the Users table stores binary data.
+* Type: PostgreSQL's OID (Object Identifier) type is used for large binary objects.
+* Advantages:
+  * Efficient storage for binary data.
+  * Simplified management of associated metadata (e.g., MIME type).
+**Best Practices for Image Storage:**
+1. Keep Images Optional:
+  Not all users will upload images, so the imageData column allows NULL values.
+2. Store Metadata:
+  Save the image MIME type (image/png, image/jpeg) in a separate column for compatibility.
+3. Optimize Retrieval:
+  Convert binary data to Base64 only when needed to minimize overhead.
+
+### Security and Validation
+1. File Type Validation:
+  Ensure only valid image types (e.g., png, jpeg) are accepted.
+  Reject unsupported or potentially malicious files.
+2. Size Restrictions:
+  Enforce maximum file size limits to prevent excessive database usage.
+  Example: Restrict image uploads to 5MB.
+3. Base64 Encoding:
+  Convert binary data to Base64 strings for compatibility with JSON-based APIs.
+4. Environment-Specific Configurations:
+  For production environments, consider offloading images to dedicated file storage services like AWS S3 or Google Cloud Storage for scalability.
+
+### Example Workflow
+Uploading a Profile Image:
+1. Request: A user sends their profile image (in Base64 format) to the server via a POST request.
+2. Processing:
+  * Decode the Base64 string to binary.
+  * Store the binary data in the imageData column.
+  * Save the image MIME type in the imageType column.
+3 . Response:
+  * A confirmation message is sent to the user
 
 # 7. Email Services
 This section describes the email services implemented in the backend server. These services are designed to handle user communication, including account creation, appointment notifications, and reminders. The implementation ensures reliability, scalability, and customizability by leveraging HTML templates and Spring's email capabilities.
@@ -705,7 +795,7 @@ All email-sending methods handle MessagingException, which may occur due to:
 
 # 8. Deployment Process
 
-# 9. API Documentation
+# 8. API Documentation
 This section provides a comprehensive overview of the API endpoints exposed by the backend server. Each endpoint is described with its HTTP method, path, request body, response format, status codes, and authorization requirements.
 
 ### Overview
@@ -1104,9 +1194,186 @@ Handles veterinary appointment-related operations.
     * 403 Forbidden: Unauthorized access.
     * 404 Not Found: Appointment not found.
     * 500 Internal Server Error: Server error.
-  
-# 10. Monitoring and Logging
 
-# 11. FAQ and Troubleshooting
+# 9. FAQ and Troubleshooting
+**2.1 Application Fails to Start**
+* Error: Database connection refused.
+  * Solution: Ensure the PostgreSQL database is running and accessible. Verify the connection string, username, and password in the environment variables.
+  * Command to check:
+  ```bash
+  docker ps 
+  ```
+* Error Port 8080 is already in use.
+  * Solution: Stop the conflicting service or change the application's port in the application.properties file:
+  ```
+  server.port=8081
+  ```
 
-# 12. Appendices
+**2.2 Cannot Upload or Retrieve Images**
+* Cause: Image data is not being stored in the database or incorrectly encoded.
+  * Solution:
+    * Verify the imageData column is of type OID.
+    * Ensure the image is correctly Base64-encoded before saving.
+    * Check for any constraints or size limits in the database.
+
+**2.3 Email Notifications Are Not Sent**
+* Cause: Incorrect SMTP configuration.
+  * Solution:
+    * Verify the spring.mail configuration in the application.properties file.
+    * Check the SMTP server logs for errors.
+    * For Gmail, ensure "Less secure app access" is enabled for the sender account.
+
+**2.4 JWT Token Validation Fails**
+* Error: JWT token is invalid or expired.
+  * Solution:
+    1. Verify that the SECURITY_JWT_SECRET_KEY in the backend matches the one used to generate the token.
+    2. Ensure the token is not expired.
+    3. Check the jwtExpiration configuration in the .env file.
+
+****2.5 Deployment Issues****
+* Error: Cannot bind to port 5432 for PostgreSQL.
+  * Solution:
+    * Ensure no other services are using port 5432 on the host machine.
+    * Change the exposed port in docker-compose.yml
+    ```yaml
+      ports:
+        - "5433:5432"
+    ```
+* Error: Cannot pull Docker image from Docker Hub.
+  * Solution:
+    * Ensure correct Docker credentials are used.
+    * Run:
+    ```bash
+    docker login
+    ```
+
+**2.6 Performance Issues**
+* Symptom: API responses are slow.
+  * Solution:
+    * Enable query logging to identify slow queries
+    ```properties
+    spring.jpa.properties.hibernate.show_sql=true
+    spring.jpa.properties.hibernate.format_sql=true
+    ```    
+    * Add indexes to frequently queried columns (e.g., email, id).
+    * Optimize JPA queries using projections.
+
+**2.7 Image Upload Fails**
+* Error: File size exceeds the allowed limit.
+  * Solution: Configure file size limits in Spring Boot
+  ```properties
+  spring.servlet.multipart.max-file-size=5MB
+  spring.servlet.multipart.max-request-size=5MB
+  ```
+* Error: Unsupported file type.
+  * Solution: Add validation for allowed file types (e.g., image/png, image/jpeg).
+
+### Additional Resources
+* PostgreSQL Documentation: https://www.postgresql.org/docs/
+* Spring Boot Reference Guide: https://docs.spring.io/spring-boot/docs/current/reference/html/
+* Docker Documentation: https://docs.docker.com/
+
+# 10. Appendices
+This section provides additional information, resources, and references to support developers and administrators working with the backend server. It includes conventions, file structure, key configurations, and links to external documentation.
+
+**Codebase Structure**
+The backend server follows a modular structure for better organization and maintainability.
+
+**1.1 Directory Layout**
+```plaintext
+src/
+├── main/
+│   ├── java/org/pawpal/
+│   │   ├── controller/        # Controllers handling API endpoints
+│   │   ├── dto/               # Data Transfer Objects
+│   │   ├── exception/         # Custom exception classes
+│   │   ├── jwt/               # JWT utilities and filters
+│   │   ├── mail/              # Email service utilities
+│   │   ├── model/             # Entity classes
+│   │   ├── repository/        # JPA repositories
+│   │   ├── service/           # Business logic and service classes
+│   │   ├── util/              # Utility classes
+│   │   └── config/            # Security and application configuration
+│   └── resources/
+│       ├── application.properties # Main configuration file
+│       ├── application.yml        # YAML configuration (optional)
+│       ├── static/                # Static files (if applicable)
+│       ├── templates/             # Thymeleaf templates for emails
+│       └── sql/                   # SQL initialization scripts
+├── test/                          # Unit and integration tests
+└── Dockerfile                     # Docker build configuration
+└── docker-compose.yml             # Docker Compose setup
+```
+
+### Naming Conventions
+Adopting consistent naming conventions helps improve readability and maintainability.
+
+**2.1 Package Naming**
+* Use lowercase letters.
+* Structure packages by functionality:
+  * controller: For controllers.
+  * service: For service classes.
+  * repository: For database repositories.
+
+**2.2 Class Naming**
+* Use PascalCase for class names (e.g., AuthenticationController, UserService).
+* Name entity classes based on the resource they represent (e.g., User, Pet, VeterinaryAppointment).
+
+**2.3 Method Naming**
+* Use camelCase for method names.
+* Use descriptive names for methods, e.g.:
+  * findUserByEmail(String email)
+  * createPet(User user, PetDTO petDTO)
+**2.4 File Naming**
+* Follow the same naming convention as classes.
+* Configuration files should reflect their purpose (e.g., application.properties, docker-compose.yml).
+
+### Key Configurations
+**3.1 application.properties**
+The main configuration file for Spring Boot. Below are key settings:
+```properties
+spring.application.name=pawpal
+spring.datasource.url=jdbc:postgresql://localhost:5435/pawpal_db
+spring.datasource.username=pawpal_user
+spring.datasource.password=secretpassword
+spring.datasource.driver-class-name=org.postgresql.Driver
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.generate-ddl=true
+security.jwt.secret-key=your-secret-key
+security.jwt.expiration-time=604800000
+
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.protocol=smtp
+spring.mail.username=your-email@gmail.com
+spring.mail.password=your-email-password
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+spring.mail.properties.mail.mime.charset=UTF
+spring.mail.default-encoding=UTF-8
+```
+
+**3.2 Docker Configuration**
+Ensure your compose.yml includes environment variables for sensitive information:
+```yaml
+services:
+  postgres:
+    image: 'postgres:latest'
+    environment:
+      POSTGRES_USER: 'pawpal_user'
+      POSTGRES_PASSWORD: 'secretpassword'
+      POSTGRES_DB: 'pawpal_db'
+    ports:
+      - '5435:5432'
+```
+
+### References
+* Spring Boot Documentation: https://spring.io/projects/spring-boot
+* PostgreSQL Documentation: https://www.postgresql.org/docs/
+* JWT Specification: https://jwt.io/
+* Docker Documentation: https://docs.docker.com/
+
+### Useful Tools
+* IDE: IntelliJ IDEA or Eclipse for Java development.
+* Database Management: pgAdmin or DBeaver for PostgreSQL.
