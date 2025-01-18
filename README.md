@@ -6,20 +6,20 @@ Overview of the Backend Architecture
 Key Technologies Used (e.g., Node.js, Django, etc.)
 Prerequisites for Understanding This Documentation
 
-### 2. System Architecture
+[**2. System Architecture**](#2-system-architecture)
 
 High-Level Architecture Diagram
 Component Diagram with Relationships and Flows
 Explanation of Communication Protocols (e.g., REST, GraphQL, WebSocket)
 Tools: Lucidchart, Draw.io, or Visio for diagrams.
 
-### 3. Authentication and Authorization
+[**3. Authentication and Authorization**](#3-authentication-and-authorization)
 Overview of JWT (JSON Web Tokens)
 Authorization Flow with Diagrams
 Token Expiration and Refresh Mechanisms
 Tools: Postman for testing authentication endpoints, Swagger for API documentation.
 
-### 4. Database Management!!!!
+[**4. Database Management**](#4-database-management)
 
 Database Schema Overview (ERD Diagrams)
 Data Storage for Images
@@ -27,7 +27,7 @@ Explanation of Storing Images in the Database vs. File System
 Reference to any File Storage Services (e.g., AWS S3, Google Cloud Storage)
 Tools: DB Designer, PgAdmin, or MySQL Workbench.
 
-### 5. Security Features
+[**5. Security Features**](#5-security-features)
 
 Password Hashing and Salting Process
 Explanation of Hashing Algorithms (e.g., bcrypt, Argon2)
@@ -35,14 +35,14 @@ Secure Storage of Sensitive Information
 Rate Limiting and Protection Against Brute Force Attacks
 Tools: OWASP Cheat Sheets, Burp Suite for security testing.
 
-### 6. Image Handling!!!
+[**6. Image Handling**](#6-image-handling)
 
 Explanation of Image Upload and Retrieval
 Steps for Processing Images (e.g., Resizing, Compression)
 Storage Mechanism (Database or External File Storage)
 Tools: Sharp (for image processing in Node.js), ImageMagick.
 
-### 7. Email Services
+[**7. Email Services**](#7-email-services)
 
 Email Sending Mechanism
 Libraries/Services Used (e.g., Nodemailer, SendGrid)
@@ -50,7 +50,7 @@ Example Code Snippet for Sending Emails
 Configuration of SMTP Servers
 Tools: Mailtrap for testing emails, SendGrid for production services.
 
-### 8. Deployment Process!!!
+[**8. Deployment Process**](#8-deployment-process)
 
 Setting Up the Server Environment
 Using Docker for Containerization
@@ -58,27 +58,27 @@ CI/CD Pipeline Overview
 Environment Variables and Secrets Management
 Tools: Docker Compose, GitHub Actions or Jenkins for CI/CD.
 
-### 9. API Documentation
+[**9. API Documentation**](#9-api-documentation)
 
 API Endpoints (Routes, Methods, and Payloads)
 Example Requests and Responses
 Error Codes and Their Meanings
 Tools: Swagger UI, Postman, or Redoc.
 
-### 10. Monitoring and Logging!!!!
+[**10. Monitoring and Logging**](#10-monitoring-and-logging)
 
 Logging Mechanism (e.g., Winston, Morgan)
 Application Performance Monitoring (e.g., New Relic, Datadog)
 Error Tracking Tools (e.g., Sentry)
 Tools: LogDNA, Elastic Stack.
 
-### 11. FAQ and Troubleshooting!!!!!
+[**11. FAQ and Troubleshooting**](#11-faq-and-troubleshooting)
 
 Common Issues and Solutions
 Tips for Debugging
 Where to Find Support (e.g., Official Documentation, Community Forums)
 
-### 12. Appendices!!!!!
+[**12. Appendices**](#12-appendices)
 Glossary of Terms
 Links to Resources and References
 Additional Diagrams or Supporting Information
@@ -263,18 +263,11 @@ Here’s an example of how layers interact during a user registration workflow:
    * The PasswordService generates a secure password.
    * The EmailSender sends the account creation email using a Thymeleaf template.
 
-### Deployment Considerations
-The architecture supports containerization using Docker. Each component can be run in isolated containers, ensuring scalability and environment consistency. The Docker configuration includes:
-* The application backend.
-* A database container (e.g., MySQL or PostgreSQL).
-* Any additional services (e.g., message queues or caching).
+### UML Diagram
+<img src="./images/uml-diagram.png" alt="Uml Diagram" height="256" width="256">
 
-### Prerequisites for Component Diagram
-For the Component Diagram, consider including:
-1. Main Components:
-* Controllers, Services, Repositories, Security Filters, and Utility classes.
-2. Interactions:
-* Represent how components communicate, such as method calls, dependency injections, and database interactions.
+### Component Diagram
+<img src="./images/component-diagram.png" alt="Component Diagram" height="128" width="100">
 
 # 3. Authentication and Authorization
 This section describes the authentication and authorization processes implemented in the backend server for the client-server application. It includes an overview of user registration, login functionality, and JWT (JSON Web Token) usage for secure authentication.
@@ -442,6 +435,10 @@ catch (Exception e) {
 * EmailSender: For sending account-related emails.
 
 # 4. Database Management
+This section provides an overview of the database management strategies implemented in the backend server. It includes the database schema, data storage for images, and considerations for storing images in the database versus the file system.
+
+### Database Schema Overview
+<img src="./images/erd-diagram.jpg" height="128" width="100">
 
 # 5. Security Features
 This section outlines the security features implemented in the backend server to ensure secure access and data protection. It includes configurations for authentication, authorization, password security, and CORS (Cross-Origin Resource Sharing) policy enforcement.
@@ -735,22 +732,21 @@ Handles user registration and login.
             "lastName": "Doe",
             "email": "john.doe@example.com"
           }```
-        * Response:
-          * 200 OK: "Your account was created! Check your email."
-          * 400 Bad Request: "An account with this email already exists
+      * Response:
+        * 200 OK: "Your account was created! Check your email."
+        * 400 Bad Request: "An account with this email already exists
 * POST /auth/login
   * Description: Authenticates a user and generates a JWT token.
     * Request Body:
-    ```json
-    {
-    "email": "john.doe@example.com",
-    "password": "password123"
-    }
-    ```
+      ```json
+      {
+      "email": "john.doe@example.com",
+      "password": "password123"
+      }
+      ```
     * Response:
       * 200 OK: JWT token and user details.
       * 401 Unauthorized: Invalid credentials
-      * body: 
       ```json
       {
       "token": "JWT_TOKEN",
@@ -771,7 +767,6 @@ Manages user operations.
     * 204 No Content: No users found.
     * 403 Forbidden: Unauthorized access.
     * 500 Internal Server Error: Server error. 
-    * body:  
     ```json
     [
       {
@@ -806,7 +801,6 @@ Manages user operations.
     * 403 Forbidden: Unauthorized access.
     * 409 Conflict: "User already exists."
     * 500 Internal Server Error: Server
-    * body:
     ```json
     {
         "id": 1,
@@ -856,7 +850,6 @@ Manages user operations.
     * 403 Forbidden: Unauthorized access.
     * 404 Not Found: "User not found."
     * 500 Internal Server Error: Server error.
-    * body:
     ```json
     {
       "firstName": 1,
@@ -980,13 +973,13 @@ Manages pet-related operations.
       ```
 
 * DELETE /pets/{id}
-    * Description: Deletes the pet with the specified ID.
-    * Response:
-        * 204 No Content: Pet deleted successfully.
-        * 403 Forbidden: Unauthorized access.
-        * 404 Not Found: Pet not found.
-        * 409 Conflict: "Pet deletion failed."
-        * 500 Internal Server Error: Server error.
+  * Description: Deletes the pet with the specified ID.
+  * Response:
+    * 204 No Content: Pet deleted successfully.
+    * 403 Forbidden: Unauthorized access.
+    * 404 Not Found: Pet not found.
+    * 409 Conflict: "Pet deletion failed."
+    * 500 Internal Server Error: Server error.
 
 * POST /addpetdata
   * Description: Adds pet data to the database.
